@@ -10,19 +10,24 @@ namespace word_mailmerge
 {
     public class Merger
     {
-        Application wordApp = new Application();
+        Application wordApp;
 
         _Document wrdDoc;
         Object oMissing = System.Reflection.Missing.Value;
         Object oFalse = false;
         Object oTrue = true;
         const string rootFolder = "F:\\source_files\\word_mailmerge";
-        Object oName = rootFolder + "\\DataDoc.doc";
-        Object oDocName = rootFolder + "\\State University.docx";
+        Object oTemplateName = rootFolder + "\\State University.docx";
+        string docName = "cost_and_charges.docx";
         Object oDotName = rootFolder + "\\State University.dotx";
         Object oDataName = rootFolder + "\\DataDoc.doc";
         Object oMergedName = rootFolder + "\\MergedDoc.docx";
         string sourceDataCsv = rootFolder + "\\source_data.csv";
+
+        public Merger(ref Application app)
+        {
+            wordApp = app;
+        }
 
         private void InsertLines(int LineNum)
         {
@@ -80,7 +85,6 @@ namespace word_mailmerge
             oDataDoc.Close(ref oFalse, ref oMissing, ref oMissing);
         }
 
-
         public List<string> ReadCsv(string filename)
         {
             var res = new List<string>();
@@ -94,15 +98,16 @@ namespace word_mailmerge
             return res;
         }
 
-        public void MergeCore(string[]  headers, string[] dataFields)
+        public Document MergeCore(string[] headers, string[] dataFields, ref Application wordApp, object templateName)
         {
+            Document wordDoc = new Document();
+
             if (dataFields.Length == 1)
-                return;
+                return wordDoc;
 
             Object oMissing = System.Reflection.Missing.Value;
-            Object oTemplatePath = oDocName;
+            Object oTemplatePath = (object)templateName;
 
-            Document wordDoc = new Document();
             wordDoc = wordApp.Documents.Add(ref oTemplatePath, ref oMissing, ref oMissing, ref oMissing);
             foreach (Field myMergeField in wordDoc.Fields)
             {
@@ -128,26 +133,20 @@ namespace word_mailmerge
                 }
             }
 
-            string eml = dataFields[headers.ToList<string>().IndexOf("Email")];
-
-            var fn = Path.GetFileName((string)oDocName);
-            fn = eml + " - " + fn;
-            var dirName = Path.GetDirectoryName((string)oDocName);
-            var newFilename = Path.Combine(dirName, fn);
-
-            wordDoc.SaveAs(newFilename);
-            wordDoc.Close();
-            wordDoc = null;
+            return wordDoc;
         }
 
-        public void Merge4()
+        public List<SmtpMailDetails> Merge(int mailBatchId)
         {
-
             var datarows = ReadCsv(sourceDataCsv);
             string[] headers = new string[0];
+            var mailingList = new List<SmtpMailDetails>();
 
             foreach ( var row in datarows)
             {
+                var attachments = new List<string>();
+                var mailToList = new List<Tuple<string, string>>();
+
                 if (headers.Length == 0)
                 {
                     headers = datarows[0].Split(';');
@@ -155,126 +154,31 @@ namespace word_mailmerge
                 }
 
                 var dataFields = row.Split(';');
+                if (dataFields.Length == 1 && dataFields[0] == "")
+                    continue;
 
-                MergeCore(headers, dataFields);
+                var wordDoc = MergeCore(headers, dataFields, ref wordApp, oTemplateName);
 
-                //Object oMissing = System.Reflection.Missing.Value;
-                //Object oTemplatePath = oDotName;
+                var docGuid = Guid.NewGuid();
+                //var documentName = $"{Guid.NewGuid()}_{docName}.docx";
+                var documentName = $"{wordDoc.DocID}_{docName}.docx";
 
+                string filePath = $"{rootFolder}\\{documentName}";
+                attachments.Add(filePath);
+                wordDoc.SaveAs(filePath);
 
-                //Document wordDoc = new Document();
-                //wordDoc = wordApp.Documents.Add(ref oTemplatePath, ref oMissing, ref oMissing, ref oMissing);
-                //foreach (Field myMergeField in wordDoc.Fields)
-                //{
-                //    Range rngFieldCode = myMergeField.Code;
-                //    String fieldText = rngFieldCode.Text;
+                mailToList.Add(new Tuple<string, string>(dataFields[0], $"{dataFields[1]} {dataFields[2]}"));
 
-                //    if (fieldText.StartsWith(" MERGEFIELD "))
-                //    {
-                //        Int32 endMerge = (" MERGEFIELD ").Length;
-                //        Int32 fieldNameLength = fieldText.Length - endMerge;
-                //        String fieldName = fieldText.Substring(endMerge, fieldNameLength);
-
-                //        fieldName = fieldName.Trim();
-
-                //        for(int ix = 0; ix < headers.Length; ix++)
-                //        {
-                //            if (headers[ix] == fieldName)
-                //            {
-                //                myMergeField.Select();
-                //                wordApp.Selection.TypeText(dataFields[ix]);
-                //            }
-                //        }
-                //    }
-                //}
-                //wordDoc.SaveAs(oMergedName);
+                var details = new SmtpMailDetails();
+                details.smtp_mail_batch_id = mailBatchId;
+                details.mime_mail_to_list = mailToList;
+                details.mime_attachment_list = attachments;
+        
+                mailingList.Add(details);
                 //wordApp.Documents.Open(oMergedName);
-
+                wordDoc.Close();
             }
-            wordApp = null;
-
-        }
-
-
-        public void Merge3()
-        {
-            //OBJECT OF MISSING "NULL VALUE"
-            Object oMissing = System.Reflection.Missing.Value;
-            Object oTemplatePath = oDotName;
-
-            Application wordApp = new Application();
-            Document wordDoc = new Document();
-            wordDoc = wordApp.Documents.Add(ref oTemplatePath, ref oMissing, ref oMissing, ref oMissing);
-            foreach (Field myMergeField in wordDoc.Fields)
-            {
-                Range rngFieldCode = myMergeField.Code;
-                String fieldText = rngFieldCode.Text;
-
-                // ONLY GETTING THE MAILMERGE FIELDS
-                if (fieldText.StartsWith(" MERGEFIELD "))
-                {
-                    // THE TEXT COMES IN THE FORMAT OF
-                    // MERGEFIELD  MyFieldName  \\* MERGEFORMAT
-                    // THIS HAS TO BE EDITED TO GET ONLY THE FIELDNAME "MyFieldName"
-                    Int32 endMerge = (" MERGEFIELD ").Length;
-                    Int32 fieldNameLength = fieldText.Length - endMerge;
-                    String fieldName = fieldText.Substring( endMerge, fieldNameLength);
-                    // GIVES THE FIELDNAMES AS THE USER HAD ENTERED IN .dot FILE
-                    fieldName = fieldName.Trim();
-                    // **** FIELD REPLACEMENT IMPLEMENTATION GOES HERE ****//
-                    // THE PROGRAMMER CAN HAVE HIS OWN IMPLEMENTATIONS HERE
-                    if (fieldName == "FirstName")
-                    {
-                        myMergeField.Select();
-                        wordApp.Selection.TypeText("Haakon");
-                    }
-                }
-            }
-            wordDoc.SaveAs(oMergedName);
-            wordDoc.Close();
-
-            wordApp.Documents.Open(oMergedName);
-            wordApp.Application.Quit();
-        }
-     
-        public void merge2() //object sender, System.EventArgs e)
-        {
-            Selection wrdSelection;
-            MailMerge wrdMailMerge;
-            MailMergeFields wrdMergeFields;
-            Table wrdTable;
-            string StrToAdd;
-
-            // Create an instance of Word  and make it visible.
-            wordApp = new Application();
-            wordApp.Visible = true;
-
-            // Add a new document.
-            wrdDoc = wordApp.Documents.Open(ref oDotName, ref oMissing, ref oMissing, ref oMissing, ref oMissing);
-            wrdDoc.Select();
-
-            wrdSelection = wordApp.Selection;
-            wrdMailMerge = wrdDoc.MailMerge;
-
-            Object oHeader = "FirstName;LastName;Address;CityStateZip";
-            wrdMailMerge.CreateDataSource(ref oDataName, ref oMissing,
-            ref oMissing, ref oHeader, ref oMissing, ref oMissing,
-            ref oMissing, ref oMissing, ref oMissing);
-
-            // Perform mail merge.
-            wrdMailMerge.Destination = WdMailMergeDestination.wdSendToNewDocument;
-            wrdMailMerge.Execute(ref oTrue);
-
-            // Close the original form document.
-            wrdDoc.Saved = true;
-            wrdDoc.Close(ref oFalse, ref oMissing, ref oMissing);
-
-            // Release References.
-            wrdSelection = null;
-            wrdMailMerge = null;
-            wrdMergeFields = null;
-            wrdDoc = null;
-            wordApp = null;
+            return mailingList;
         }
 
         public void mergeit() //object sender, System.EventArgs e)
