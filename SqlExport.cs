@@ -117,7 +117,7 @@ namespace Exports
         }
     }
 
-    public class SqlExport
+    public class SqlExport 
     {
         string connectionString = "Data Source=abg-db10-osl;Initial Catalog=ABGSC_DW;Integrated Security=True";
         SqlConnection conn;
@@ -127,18 +127,33 @@ namespace Exports
             conn = SqlHelper.GetConnection(connectionString);
         }
 
-        public void Write(List<SmtpMailDetails> mails)
-        {
-            foreach(var m in mails)
+        public void Export(List<SmtpMailDetails> mailingList)
+        {                    
+            foreach (var m in mailingList)
             {
                 if (Exists(m) == false)
                 {
-                    Insert(m);
+                    Create(m);
                 }
             }
-            //BulkAddRates(connectionString, rates);
         }
 
+        public SqlDataReader Read(string query)
+        {
+            var reader = SqlHelper.ExecuteReader(conn, query, CommandType.Text);
+            return reader;
+        }
+
+        public void Update(string query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(string query)
+        {
+            throw new NotImplementedException();
+        }
+            
         private void BulkAddRates(List<SmtpMailDetails> mails)
         {
             throw (new NotImplementedException());
@@ -158,12 +173,12 @@ namespace Exports
             var rows = SqlHelper.ExecuteNonQuery(connectionString, commandText, CommandType.Text, null);
         }
 
-        public int Insert(SmtpMailDetails mail)
+        public int Create(SmtpMailDetails mail)
         {
             var x = mail.mime_mail_to_list;
             string commandText = $"INSERT INTO [dbo].[smtp_mail_details] " +
                                 $" ([smtp_mail_batch_id], [mime_mail_to_list], [mime_mail_to_name_list], [mime_attachment_list]) " +
-                                $" VALUES ({mail.smtp_mail_batch_id}, '{mail.mime_mail_to_list.First().Item1 }', '{mail.mime_mail_to_list.First().Item2}', '{mail.mime_attachment_list}')";
+                                $" VALUES ({mail.smtp_mail_batch_id}, '{mail.mime_mail_to_list.First().Item1 }', '{mail.mime_mail_to_list.First().Item2}', '{mail.mime_attachment_list.First()}')";
             return SqlHelper.ExecuteNonQuery(conn, commandText, CommandType.Text, null);
         }
 
@@ -171,9 +186,9 @@ namespace Exports
         {
             string commandText = $"SELECT COUNT(*) as numRows FROM dbo.smtp_mail_details WHERE [smtp_mail_batch_id]={mail.smtp_mail_batch_id} "
                                 + $" AND [mime_mail_to_list] = '{mail.mime_mail_to_list.First().Item1}' "
-                                + $" AND [mime_mail_to_name_list] = '{mail.mime_mail_to_list.First().Item2}' "
-                                + $" AND [mime_attachment_list] = '{mail.mime_attachment_list.First()}' ";
-            var reader = SqlHelper.ExecuteReader(conn, commandText, CommandType.Text);
+                                + $" AND [mime_mail_to_name_list] = '{mail.mime_mail_to_list.First().Item2}' ";
+                                // Maybe not check attachment name + $" AND [mime_attachment_list] = '{mail.mime_attachment_list.First()}' ";
+            var reader = Read(commandText);
             
             int numRows = 0;
             if (reader.Read() == true) 

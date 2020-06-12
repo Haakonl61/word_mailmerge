@@ -16,13 +16,13 @@ namespace word_mailmerge
         Object oMissing = System.Reflection.Missing.Value;
         Object oFalse = false;
         Object oTrue = true;
-        const string rootFolder = "F:\\source_files\\word_mailmerge";
+        string rootFolder = Settings.Default.RootFolder;
         Object oTemplateName = rootFolder + "\\State University.docx";
         string docName = "cost_and_charges.docx";
         Object oDotName = rootFolder + "\\State University.dotx";
         Object oDataName = rootFolder + "\\DataDoc.doc";
         Object oMergedName = rootFolder + "\\MergedDoc.docx";
-        string sourceDataCsv = rootFolder + "\\source_data.csv";
+        string sourceDataCsv = Settings.Default.SorceDataPath;
 
         public Merger(ref Application app)
         {

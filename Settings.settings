@@ -3,7 +3,13 @@
   <Profiles />
   <Settings>
     <Setting Name="BatchId" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="SorceDataPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">F:\source_files\word_mailmerge\source_data.csv</Value>
+    </Setting>
+    <Setting Name="RootFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">F:\source_files\word_mailmerge</Value>
     </Setting>
   </Settings>
 </SettingsFile>

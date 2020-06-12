@@ -12,21 +12,13 @@ namespace word_mailmerge
     {
         static void Main(string[] args)
         {
-            int mailBatchId = 1;
             var app = new Application();
             Merger mrg = new Merger(ref app);
-            var mailingList = mrg.Merge(mailBatchId);
+            var mailingList = mrg.Merge(Settings.Default.BatchId);
             app.Quit();
 
-            //TODO: insert list to database
             var db = new Exports.SqlExport();
-            foreach(var m in mailingList)
-            {
-                if (db.Exists(m) == false)
-                {
-                    db.Insert(m);
-                }
-            }
+            db.Export(mailingList);
 
             Console.WriteLine("Done");
         }
