@@ -1,5 +1,5 @@
-Email;FirstName;LastName;Address;CityStateZip
-haakon.langballe@gmail.com;Steve;DeBroux;4567 Main Street;Buffalo, NY 98052
-haakonstilbud@gmail.com;Jan;Miksovsky;1234 5th Street;Charlotte, NC 98765
-haakonl61@gmail.com;Brian;Valentine;12348 78th Street  Apt. 214;Lubbock,TX 25874
-
+Email;FirstName;LastName;Adresse;Postnummer;Poststed;Land;Commission;Margin;ResearchCommission;StockLoanFee;FinancialTax;Total;Currency
+haakon.langballe@gmail.com;Steve;DeBroux;Storgata 2;0222;Oslo;Norge;1.234;2.34;3.45;4.56;5.67;6.78;NOK
+haakonstilbud@gmail.com;Jan;Miksovsky;Storgata 4;0222;Oslo;Norge;1.234;2.34;3.45;4.56;5.67;6.78;NOK
+haakonl61@gmail.com;Brian;Valentine;Storgata 6;0222;Oslo;Norge;1.27;2.37;3.47;4.57;5.67;6.787;NOK
+haakonl61@gmail.com;Brian;Valentine;Storgata 6;0222;Oslo;Norge;1.26;2.36;3.46;4.56;5.66;6.786;SEK

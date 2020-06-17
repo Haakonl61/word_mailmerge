@@ -37,13 +37,13 @@ namespace word_mailmerge {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("F:\\source_files\\word_mailmerge\\source_data.csv")]
-        public string SorceDataPath {
+        [global::System.Configuration.DefaultSettingValueAttribute("source_data.csv")]
+        public string SourceDataFile {
             get {
-                return ((string)(this["SorceDataPath"]));
+                return ((string)(this["SourceDataFile"]));
             }
             set {
-                this["SorceDataPath"] = value;
+                this["SourceDataFile"] = value;
             }
         }
         
@@ -56,6 +56,30 @@ namespace word_mailmerge {
             }
             set {
                 this["RootFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Annual Cost and Charges Report 2019_AT.docm")]
+        public string TemplateDocument {
+            get {
+                return ((string)(this["TemplateDocument"]));
+            }
+            set {
+                this["TemplateDocument"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Annual Cost and Charges Report 2019_AT.docx")]
+        public string DocumentOutName {
+            get {
+                return ((string)(this["DocumentOutName"]));
+            }
+            set {
+                this["DocumentOutName"] = value;
             }
         }
     }
